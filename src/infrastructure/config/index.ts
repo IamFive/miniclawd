@@ -19,12 +19,6 @@ export {
   getWorkspacePath,
   getApiKey,
   getApiBase,
-} from "./schema.js";
+} from './schema.js'
 
-export {
-  loadConfig,
-  saveConfig,
-  getConfigPath,
-  getDataDir,
-  applyEnvOverrides,
-} from "./loader.js";
+export { loadConfig, saveConfig, getConfigPath, getDataDir, applyEnvOverrides } from './loader.js'

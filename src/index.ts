@@ -5,7 +5,7 @@
  * A personal AI assistant with multi-channel support.
  */
 
-import { createProgram } from "./cli/commands.js";
+import { createProgram } from './cli/commands.js'
 
-const program = createProgram();
-program.parse();
+const program = createProgram()
+program.parse()

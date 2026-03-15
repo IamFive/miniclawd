@@ -2,58 +2,58 @@
  * Skills loader for agent capabilities.
  */
 
-import { existsSync, readFileSync, readdirSync, statSync } from "fs";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
-import matter from "gray-matter";
-import { execSync } from "child_process";
+import { existsSync, readFileSync, readdirSync, statSync } from 'fs'
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
+import matter from 'gray-matter'
+import { execSync } from 'child_process'
 
 // Get the directory of the current module
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 // Default builtin skills directory (relative to this file)
-const BUILTIN_SKILLS_DIR = join(__dirname, "..", "..", "skills");
+const BUILTIN_SKILLS_DIR = join(__dirname, '..', '..', 'skills')
 
 /**
  * Skill info.
  */
 export interface SkillInfo {
-  name: string;
-  path: string;
-  source: "workspace" | "builtin";
+  name: string
+  path: string
+  source: 'workspace' | 'builtin'
 }
 
 /**
  * Skill metadata from frontmatter.
  */
 export interface SkillMetadata {
-  name?: string;
-  description?: string;
-  homepage?: string;
-  always?: boolean;
-  metadata?: string;
-  [key: string]: unknown;
+  name?: string
+  description?: string
+  homepage?: string
+  always?: boolean
+  metadata?: string
+  [key: string]: unknown
 }
 
 /**
  * Parsed nanobot metadata.
  */
 interface NanobotMetadata {
-  emoji?: string;
-  always?: boolean;
+  emoji?: string
+  always?: boolean
   requires?: {
-    bins?: string[];
-    env?: string[];
-  };
+    bins?: string[]
+    env?: string[]
+  }
   install?: Array<{
-    id: string;
-    kind: string;
-    formula?: string;
-    package?: string;
-    bins: string[];
-    label: string;
-  }>;
+    id: string
+    kind: string
+    formula?: string
+    package?: string
+    bins: string[]
+    label: string
+  }>
 }
 
 /**
@@ -63,30 +63,30 @@ interface NanobotMetadata {
  * specific tools or perform certain tasks.
  */
 export class SkillsLoader {
-  private workspace: string;
-  private workspaceSkills: string;
-  private builtinSkills: string;
+  private workspace: string
+  private workspaceSkills: string
+  private builtinSkills: string
 
   constructor(workspace: string, builtinSkillsDir?: string) {
-    this.workspace = workspace;
-    this.workspaceSkills = join(workspace, "skills");
-    this.builtinSkills = builtinSkillsDir || BUILTIN_SKILLS_DIR;
+    this.workspace = workspace
+    this.workspaceSkills = join(workspace, 'skills')
+    this.builtinSkills = builtinSkillsDir || BUILTIN_SKILLS_DIR
   }
 
   /**
    * List all available skills.
    */
   listSkills(filterUnavailable: boolean = true): SkillInfo[] {
-    const skills: SkillInfo[] = [];
+    const skills: SkillInfo[] = []
 
     // Workspace skills (highest priority)
     if (existsSync(this.workspaceSkills)) {
       for (const name of readdirSync(this.workspaceSkills)) {
-        const skillDir = join(this.workspaceSkills, name);
+        const skillDir = join(this.workspaceSkills, name)
         if (statSync(skillDir).isDirectory()) {
-          const skillFile = join(skillDir, "SKILL.md");
+          const skillFile = join(skillDir, 'SKILL.md')
           if (existsSync(skillFile)) {
-            skills.push({ name, path: skillFile, source: "workspace" });
+            skills.push({ name, path: skillFile, source: 'workspace' })
           }
         }
       }
@@ -95,11 +95,11 @@ export class SkillsLoader {
     // Built-in skills
     if (existsSync(this.builtinSkills)) {
       for (const name of readdirSync(this.builtinSkills)) {
-        const skillDir = join(this.builtinSkills, name);
+        const skillDir = join(this.builtinSkills, name)
         if (statSync(skillDir).isDirectory()) {
-          const skillFile = join(skillDir, "SKILL.md");
-          if (existsSync(skillFile) && !skills.some((s) => s.name === name)) {
-            skills.push({ name, path: skillFile, source: "builtin" });
+          const skillFile = join(skillDir, 'SKILL.md')
+          if (existsSync(skillFile) && !skills.some(s => s.name === name)) {
+            skills.push({ name, path: skillFile, source: 'builtin' })
           }
         }
       }
@@ -107,12 +107,10 @@ export class SkillsLoader {
 
     // Filter by requirements
     if (filterUnavailable) {
-      return skills.filter((s) =>
-        this.checkRequirements(this.getSkillMeta(s.name)),
-      );
+      return skills.filter(s => this.checkRequirements(this.getSkillMeta(s.name)))
     }
 
-    return skills;
+    return skills
   }
 
   /**
@@ -120,110 +118,110 @@ export class SkillsLoader {
    */
   loadSkill(name: string): string | null {
     // Check workspace first
-    const workspaceSkill = join(this.workspaceSkills, name, "SKILL.md");
+    const workspaceSkill = join(this.workspaceSkills, name, 'SKILL.md')
     if (existsSync(workspaceSkill)) {
-      return readFileSync(workspaceSkill, "utf-8");
+      return readFileSync(workspaceSkill, 'utf-8')
     }
 
     // Check built-in
-    const builtinSkill = join(this.builtinSkills, name, "SKILL.md");
+    const builtinSkill = join(this.builtinSkills, name, 'SKILL.md')
     if (existsSync(builtinSkill)) {
-      return readFileSync(builtinSkill, "utf-8");
+      return readFileSync(builtinSkill, 'utf-8')
     }
 
-    return null;
+    return null
   }
 
   /**
    * Load specific skills for inclusion in agent context.
    */
   loadSkillsForContext(skillNames: string[]): string {
-    const parts: string[] = [];
+    const parts: string[] = []
 
     for (const name of skillNames) {
-      const content = this.loadSkill(name);
+      const content = this.loadSkill(name)
       if (content) {
-        const stripped = this.stripFrontmatter(content);
-        parts.push(`### Skill: ${name}\n\n${stripped}`);
+        const stripped = this.stripFrontmatter(content)
+        parts.push(`### Skill: ${name}\n\n${stripped}`)
       }
     }
 
-    return parts.length > 0 ? parts.join("\n\n---\n\n") : "";
+    return parts.length > 0 ? parts.join('\n\n---\n\n') : ''
   }
 
   /**
    * Build a summary of all skills (name, description, path, availability).
    */
   buildSkillsSummary(): string {
-    const allSkills = this.listSkills(false);
+    const allSkills = this.listSkills(false)
     if (allSkills.length === 0) {
-      return "";
+      return ''
     }
 
     const escapeXml = (s: string) =>
-      s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-    const lines = ["<skills>"];
+    const lines = ['<skills>']
 
     for (const skill of allSkills) {
-      const name = escapeXml(skill.name);
-      const path = skill.path;
-      const desc = escapeXml(this.getSkillDescription(skill.name));
-      const skillMeta = this.getSkillMeta(skill.name);
-      const available = this.checkRequirements(skillMeta);
+      const name = escapeXml(skill.name)
+      const path = skill.path
+      const desc = escapeXml(this.getSkillDescription(skill.name))
+      const skillMeta = this.getSkillMeta(skill.name)
+      const available = this.checkRequirements(skillMeta)
 
-      lines.push(`  <skill available="${available}">`);
-      lines.push(`    <name>${name}</name>`);
-      lines.push(`    <description>${desc}</description>`);
-      lines.push(`    <location>${path}</location>`);
+      lines.push(`  <skill available="${available}">`)
+      lines.push(`    <name>${name}</name>`)
+      lines.push(`    <description>${desc}</description>`)
+      lines.push(`    <location>${path}</location>`)
 
       // Show missing requirements for unavailable skills
       if (!available) {
-        const missing = this.getMissingRequirements(skillMeta);
+        const missing = this.getMissingRequirements(skillMeta)
         if (missing) {
-          lines.push(`    <requires>${escapeXml(missing)}</requires>`);
+          lines.push(`    <requires>${escapeXml(missing)}</requires>`)
         }
       }
 
-      lines.push(`  </skill>`);
+      lines.push(`  </skill>`)
     }
 
-    lines.push("</skills>");
-    return lines.join("\n");
+    lines.push('</skills>')
+    return lines.join('\n')
   }
 
   /**
    * Get skills marked as always=true that meet requirements.
    */
   getAlwaysSkills(): string[] {
-    const result: string[] = [];
+    const result: string[] = []
 
     for (const skill of this.listSkills(true)) {
-      const metadata = this.getSkillMetadata(skill.name);
-      const skillMeta = this.parseNanobotMetadata(metadata?.metadata || "");
+      const metadata = this.getSkillMetadata(skill.name)
+      const skillMeta = this.parseNanobotMetadata(metadata?.metadata || '')
 
       if (skillMeta.always || metadata?.always) {
-        result.push(skill.name);
+        result.push(skill.name)
       }
     }
 
-    return result;
+    return result
   }
 
   /**
    * Get metadata from a skill's frontmatter.
    */
   getSkillMetadata(name: string): SkillMetadata | null {
-    const content = this.loadSkill(name);
+    const content = this.loadSkill(name)
     if (!content) {
-      return null;
+      return null
     }
 
     try {
-      const { data } = matter(content);
-      return data as SkillMetadata;
+      const { data } = matter(content)
+      return data as SkillMetadata
     } catch {
-      return null;
+      return null
     }
   }
 
@@ -231,8 +229,8 @@ export class SkillsLoader {
    * Get nanobot metadata for a skill.
    */
   private getSkillMeta(name: string): NanobotMetadata {
-    const metadata = this.getSkillMetadata(name);
-    return this.parseNanobotMetadata(metadata?.metadata || "");
+    const metadata = this.getSkillMetadata(name)
+    return this.parseNanobotMetadata(metadata?.metadata || '')
   }
 
   /**
@@ -240,10 +238,10 @@ export class SkillsLoader {
    */
   private parseNanobotMetadata(raw: string): NanobotMetadata {
     try {
-      const data = JSON.parse(raw);
-      return data.nanobot || {};
+      const data = JSON.parse(raw)
+      return data.nanobot || {}
     } catch {
-      return {};
+      return {}
     }
   }
 
@@ -251,56 +249,56 @@ export class SkillsLoader {
    * Check if skill requirements are met.
    */
   private checkRequirements(skillMeta: NanobotMetadata): boolean {
-    const requires = skillMeta.requires || {};
+    const requires = skillMeta.requires || {}
 
     // Check binary requirements
     for (const bin of requires.bins || []) {
       if (!this.which(bin)) {
-        return false;
+        return false
       }
     }
 
     // Check env requirements
     for (const env of requires.env || []) {
       if (!process.env[env]) {
-        return false;
+        return false
       }
     }
 
-    return true;
+    return true
   }
 
   /**
    * Get a description of missing requirements.
    */
   private getMissingRequirements(skillMeta: NanobotMetadata): string {
-    const missing: string[] = [];
-    const requires = skillMeta.requires || {};
+    const missing: string[] = []
+    const requires = skillMeta.requires || {}
 
     for (const bin of requires.bins || []) {
       if (!this.which(bin)) {
-        missing.push(`CLI: ${bin}`);
+        missing.push(`CLI: ${bin}`)
       }
     }
 
     for (const env of requires.env || []) {
       if (!process.env[env]) {
-        missing.push(`ENV: ${env}`);
+        missing.push(`ENV: ${env}`)
       }
     }
 
-    return missing.join(", ");
+    return missing.join(', ')
   }
 
   /**
    * Get the description of a skill from its frontmatter.
    */
   private getSkillDescription(name: string): string {
-    const metadata = this.getSkillMetadata(name);
+    const metadata = this.getSkillMetadata(name)
     if (metadata?.description) {
-      return metadata.description;
+      return metadata.description
     }
-    return name; // Fallback to skill name
+    return name // Fallback to skill name
   }
 
   /**
@@ -308,10 +306,10 @@ export class SkillsLoader {
    */
   private stripFrontmatter(content: string): string {
     try {
-      const { content: body } = matter(content);
-      return body.trim();
+      const { content: body } = matter(content)
+      return body.trim()
     } catch {
-      return content;
+      return content
     }
   }
 
@@ -320,10 +318,10 @@ export class SkillsLoader {
    */
   private which(command: string): boolean {
     try {
-      execSync(`which ${command}`, { stdio: "ignore" });
-      return true;
+      execSync(`which ${command}`, { stdio: 'ignore' })
+      return true
     } catch {
-      return false;
+      return false
     }
   }
 }

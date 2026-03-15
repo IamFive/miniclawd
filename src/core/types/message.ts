@@ -7,19 +7,19 @@
  */
 export interface InboundMessage {
   /** Channel identifier (telegram, feishu, etc.) */
-  channel: string;
+  channel: string
   /** User identifier */
-  senderId: string;
+  senderId: string
   /** Chat/channel identifier */
-  chatId: string;
+  chatId: string
   /** Message text content */
-  content: string;
+  content: string
   /** Timestamp */
-  timestamp: Date;
+  timestamp: Date
   /** Media file paths */
-  media: string[];
+  media: string[]
   /** Channel-specific metadata */
-  metadata: Record<string, unknown>;
+  metadata: Record<string, unknown>
 }
 
 /**
@@ -27,15 +27,15 @@ export interface InboundMessage {
  */
 export interface OutboundMessage {
   /** Channel identifier */
-  channel: string;
+  channel: string
   /** Chat/channel identifier */
-  chatId: string;
+  chatId: string
   /** Message content */
-  content: string;
+  content: string
   /** Optional message ID to reply to */
-  replyTo?: string;
+  replyTo?: string
   /** Media file paths */
-  media: string[];
+  media: string[]
   /** Channel-specific metadata */
-  metadata: Record<string, unknown>;
+  metadata: Record<string, unknown>
 }

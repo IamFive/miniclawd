@@ -2,8 +2,8 @@
  * LLM Provider interface.
  */
 
-import type { CoreMessage, CoreTool } from "ai";
-import type { LLMResponse } from "../types/llm.js";
+import type { CoreMessage, CoreTool } from 'ai'
+import type { LLMResponse } from '../types/llm.js'
 
 /**
  * Interface for LLM providers.
@@ -17,11 +17,11 @@ export interface ILLMProvider {
     tools?: Record<string, CoreTool>,
     model?: string,
     maxTokens?: number,
-    temperature?: number,
-  ): Promise<LLMResponse>;
+    temperature?: number
+  ): Promise<LLMResponse>
 
   /**
    * Get the default model.
    */
-  getDefaultModel(): string;
+  getDefaultModel(): string
 }

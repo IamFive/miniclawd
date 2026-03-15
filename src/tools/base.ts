@@ -2,9 +2,9 @@
  * Base class for agent tools.
  */
 
-import { z } from "zod";
-import type { CoreTool } from "ai";
-import type { ITool } from "../core/types/tool.js";
+import { z } from 'zod'
+import type { CoreTool } from 'ai'
+import type { ITool } from '../core/types/tool.js'
 
 /**
  * Abstract base class for agent tools.
@@ -16,22 +16,22 @@ export abstract class Tool implements ITool {
   /**
    * Tool name used in function calls.
    */
-  abstract readonly name: string;
+  abstract readonly name: string
 
   /**
    * Description of what the tool does.
    */
-  abstract readonly description: string;
+  abstract readonly description: string
 
   /**
    * Zod schema for tool parameters.
    */
-  abstract readonly parameters: z.ZodObject<z.ZodRawShape>;
+  abstract readonly parameters: z.ZodObject<z.ZodRawShape>
 
   /**
    * Execute the tool with given parameters.
    */
-  abstract execute(params: Record<string, unknown>): Promise<string>;
+  abstract execute(params: Record<string, unknown>): Promise<string>
 
   /**
    * Convert tool to Vercel AI SDK CoreTool format.
@@ -40,31 +40,31 @@ export abstract class Tool implements ITool {
     return {
       description: this.description,
       parameters: this.parameters,
-      execute: async (params) => {
-        return this.execute(params);
+      execute: async params => {
+        return this.execute(params)
       },
-    };
+    }
   }
 
   /**
    * Convert tool to OpenAI function schema format.
    */
   toSchema(): {
-    type: "function";
+    type: 'function'
     function: {
-      name: string;
-      description: string;
-      parameters: Record<string, unknown>;
-    };
+      name: string
+      description: string
+      parameters: Record<string, unknown>
+    }
   } {
     return {
-      type: "function",
+      type: 'function',
       function: {
         name: this.name,
         description: this.description,
         parameters: zodToJsonSchema(this.parameters),
       },
-    };
+    }
   }
 }
 
@@ -73,31 +73,31 @@ export abstract class Tool implements ITool {
  */
 function zodToJsonSchema(schema: z.ZodTypeAny): Record<string, unknown> {
   const result: Record<string, unknown> = {
-    type: "object",
+    type: 'object',
     properties: {},
     required: [] as string[],
-  };
+  }
 
   if (schema instanceof z.ZodObject) {
-    const shape = schema.shape;
-    const properties: Record<string, unknown> = {};
-    const required: string[] = [];
+    const shape = schema.shape
+    const properties: Record<string, unknown> = {}
+    const required: string[] = []
 
     for (const [key, value] of Object.entries(shape)) {
-      const zodValue = value as z.ZodTypeAny;
-      properties[key] = zodFieldToJsonSchema(zodValue);
+      const zodValue = value as z.ZodTypeAny
+      properties[key] = zodFieldToJsonSchema(zodValue)
 
       // Check if the field is required (not optional)
       if (!(zodValue instanceof z.ZodOptional)) {
-        required.push(key);
+        required.push(key)
       }
     }
 
-    result.properties = properties;
-    result.required = required;
+    result.properties = properties
+    result.required = required
   }
 
-  return result;
+  return result
 }
 
 /**
@@ -106,59 +106,59 @@ function zodToJsonSchema(schema: z.ZodTypeAny): Record<string, unknown> {
 function zodFieldToJsonSchema(field: z.ZodTypeAny): Record<string, unknown> {
   // Handle optional
   if (field instanceof z.ZodOptional) {
-    return zodFieldToJsonSchema(field.unwrap());
+    return zodFieldToJsonSchema(field.unwrap())
   }
 
   // Handle default
   if (field instanceof z.ZodDefault) {
-    const inner = zodFieldToJsonSchema(field._def.innerType);
-    inner.default = field._def.defaultValue();
-    return inner;
+    const inner = zodFieldToJsonSchema(field._def.innerType)
+    inner.default = field._def.defaultValue()
+    return inner
   }
 
   // Handle string
   if (field instanceof z.ZodString) {
-    const result: Record<string, unknown> = { type: "string" };
+    const result: Record<string, unknown> = { type: 'string' }
     if (field.description) {
-      result.description = field.description;
+      result.description = field.description
     }
-    return result;
+    return result
   }
 
   // Handle number
   if (field instanceof z.ZodNumber) {
-    const result: Record<string, unknown> = { type: "number" };
+    const result: Record<string, unknown> = { type: 'number' }
     if (field.description) {
-      result.description = field.description;
+      result.description = field.description
     }
-    return result;
+    return result
   }
 
   // Handle boolean
   if (field instanceof z.ZodBoolean) {
-    const result: Record<string, unknown> = { type: "boolean" };
+    const result: Record<string, unknown> = { type: 'boolean' }
     if (field.description) {
-      result.description = field.description;
+      result.description = field.description
     }
-    return result;
+    return result
   }
 
   // Handle enum
   if (field instanceof z.ZodEnum) {
     return {
-      type: "string",
+      type: 'string',
       enum: field._def.values,
-    };
+    }
   }
 
   // Handle array
   if (field instanceof z.ZodArray) {
     return {
-      type: "array",
+      type: 'array',
       items: zodFieldToJsonSchema(field.element),
-    };
+    }
   }
 
   // Default
-  return { type: "string" };
+  return { type: 'string' }
 }
