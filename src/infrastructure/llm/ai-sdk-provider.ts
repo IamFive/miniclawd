@@ -2,15 +2,15 @@
  * AI SDK provider wrapper for multi-provider support.
  */
 
-import { generateText, type CoreTool, type CoreMessage } from "ai";
-import { createAnthropic } from "@ai-sdk/anthropic";
-import { createOpenAI } from "@ai-sdk/openai";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createAmazonBedrock } from "@ai-sdk/amazon-bedrock";
+import { createAnthropic } from "@ai-sdk/anthropic";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createOpenAI } from "@ai-sdk/openai";
+import { generateText, type CoreMessage, type CoreTool } from "ai";
+import type { ILLMProvider } from "../../core/interfaces/llm-provider.js";
 import type { Config } from "../../core/types/config.js";
 import type { LLMResponse } from "../../core/types/llm.js";
 import type { ToolCallRequest } from "../../core/types/tool.js";
-import type { ILLMProvider } from "../../core/interfaces/llm-provider.js";
 import logger from "../../utils/logger.js";
 
 /**
@@ -108,6 +108,9 @@ export class AIProvider implements ILLMProvider {
     switch (providerName.toLowerCase()) {
       case "anthropic": {
         const anthropic = createAnthropic({
+          baseURL:
+            this.config.providers.openrouter.apiBase ||
+            process.env.ANTHROPIC_API_BASEURL,
           apiKey:
             this.config.providers.anthropic.apiKey ||
             process.env.ANTHROPIC_API_KEY,
@@ -117,6 +120,9 @@ export class AIProvider implements ILLMProvider {
 
       case "openai": {
         const openai = createOpenAI({
+          baseURL:
+            this.config.providers.openrouter.apiBase ||
+            process.env.OPENAI_API_BASEURL,
           apiKey:
             this.config.providers.openai.apiKey || process.env.OPENAI_API_KEY,
         });
@@ -140,6 +146,9 @@ export class AIProvider implements ILLMProvider {
         const google = createGoogleGenerativeAI({
           apiKey:
             this.config.providers.google.apiKey || process.env.GOOGLE_API_KEY,
+          baseURL:
+            this.config.providers.openrouter.apiBase ||
+            process.env.GOOGLE_API_BASEURL,
         });
         return google(modelName || "gemini-2.0-flash");
       }
