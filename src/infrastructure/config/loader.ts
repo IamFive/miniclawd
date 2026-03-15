@@ -3,22 +3,33 @@
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
+import { homedir } from 'os'
 import { join } from 'path'
-import { ConfigSchema } from './schema.js'
 import type { Config } from '../../core/types/config.js'
+import { ConfigSchema } from './schema.js'
+
+function getHomeDir(): string {
+  // os.homedir() is cross-platform and will fallback to correct values on Windows (USERPROFILE) and Unix (HOME).
+  const home = homedir()
+  if (!home) {
+    // As a last resort, try common env vars
+    return process.env.HOME || process.env.USERPROFILE || ''
+  }
+  return home
+}
 
 /**
  * Get the default configuration file path.
  */
 export function getConfigPath(): string {
-  return join(process.env.HOME || '', '.miniclawd', 'config.json')
+  return join(getHomeDir(), '.miniclawd', 'config.json')
 }
 
 /**
  * Get the miniclawd data directory.
  */
 export function getDataDir(): string {
-  const dir = join(process.env.HOME || '', '.miniclawd')
+  const dir = join(getHomeDir(), '.miniclawd')
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true })
   }
