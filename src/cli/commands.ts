@@ -5,21 +5,20 @@
 import { Command } from 'commander'
 import { existsSync, writeFileSync } from 'fs'
 import { join } from 'path'
-import {
-  loadConfig,
-  saveConfig,
-  getConfigPath,
-  getDataDir,
-  ConfigSchema,
-  getWorkspacePath,
-} from '../infrastructure/config/index.js'
-import { ensureDir } from '../utils/paths.js'
-import { MessageBus } from '../infrastructure/queue/message-bus.js'
 import { AgentLoop } from '../application/agent-loop.js'
-import { ChannelManager } from '../infrastructure/channels/manager.js'
 import { Scheduler } from '../application/scheduler.js'
 import type { Schedule, ScheduledJob } from '../core/types/scheduler.js'
-import logger from '../utils/logger.js'
+import { ChannelManager } from '../infrastructure/channels/manager.js'
+import {
+  ConfigSchema,
+  getConfigPath,
+  getDataDir,
+  getWorkspacePath,
+  loadConfig,
+  saveConfig,
+} from '../infrastructure/config/index.js'
+import { MessageBus } from '../infrastructure/queue/message-bus.js'
+import { ensureDir } from '../utils/paths.js'
 
 const VERSION = '0.1.0'
 const LOGO = 'miniclawd'

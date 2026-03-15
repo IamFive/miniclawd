@@ -105,7 +105,7 @@ export class AIProvider implements ILLMProvider {
     switch (providerName.toLowerCase()) {
       case 'anthropic': {
         const anthropic = createAnthropic({
-          baseURL: this.config.providers.openrouter.apiBase || process.env.ANTHROPIC_API_BASEURL,
+          baseURL: this.config.providers.anthropic.apiBase || process.env.ANTHROPIC_API_BASEURL,
           apiKey: this.config.providers.anthropic.apiKey || process.env.ANTHROPIC_API_KEY,
         })
         return anthropic(modelName || 'claude-sonnet-4-20250514')
@@ -113,7 +113,7 @@ export class AIProvider implements ILLMProvider {
 
       case 'openai': {
         const openai = createOpenAI({
-          baseURL: this.config.providers.openrouter.apiBase || process.env.OPENAI_API_BASEURL,
+          baseURL: this.config.providers.openai.apiBase || process.env.OPENAI_API_BASEURL,
           apiKey: this.config.providers.openai.apiKey || process.env.OPENAI_API_KEY,
         })
         return openai(modelName || 'gpt-4o')
@@ -130,8 +130,8 @@ export class AIProvider implements ILLMProvider {
       case 'google':
       case 'gemini': {
         const google = createGoogleGenerativeAI({
+          baseURL: this.config.providers.google.apiBase || process.env.GOOGLE_API_BASEURL,
           apiKey: this.config.providers.google.apiKey || process.env.GOOGLE_API_KEY,
-          baseURL: this.config.providers.openrouter.apiBase || process.env.GOOGLE_API_BASEURL,
         })
         return google(modelName || 'gemini-2.0-flash')
       }
