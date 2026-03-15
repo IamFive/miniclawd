@@ -6,7 +6,7 @@ import { createAmazonBedrock } from '@ai-sdk/amazon-bedrock'
 import { createAnthropic } from '@ai-sdk/anthropic'
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { createOpenAI } from '@ai-sdk/openai'
-import { generateText, type CoreMessage, type CoreTool } from 'ai'
+import { generateText, type CoreMessage, type CoreTool, type LanguageModelV1 } from 'ai'
 import type { ILLMProvider } from '../../core/interfaces/llm-provider.js'
 import type { Config } from '../../core/types/config.js'
 import type { LLMResponse } from '../../core/types/llm.js'
@@ -96,73 +96,53 @@ export class AIProvider implements ILLMProvider {
    * Get the appropriate provider based on model ID.
    */
   private getProvider(modelId: string) {
-    // Parse model ID (format: provider/model or just model)
-    const [providerName, ...modelParts] = modelId.includes('/')
+    const [providerName, modelName] = modelId.includes('/')
       ? modelId.split('/')
       : ['anthropic', modelId]
-    const modelName = modelParts.join('/')
 
-    switch (providerName.toLowerCase()) {
-      case 'anthropic': {
-        const anthropic = createAnthropic({
+    const providerCreators: Record<string, () => LanguageModelV1> = {
+      anthropic: () =>
+        createAnthropic({
           baseURL: this.config.providers.anthropic.apiBase || process.env.ANTHROPIC_API_BASEURL,
           apiKey: this.config.providers.anthropic.apiKey || process.env.ANTHROPIC_API_KEY,
-        })
-        return anthropic(modelName || 'claude-sonnet-4-20250514')
-      }
-
-      case 'openai': {
-        const openai = createOpenAI({
+        })(modelName || 'claude-sonnet-4-20250514'),
+      openai: () =>
+        createOpenAI({
           baseURL: this.config.providers.openai.apiBase || process.env.OPENAI_API_BASEURL,
           apiKey: this.config.providers.openai.apiKey || process.env.OPENAI_API_KEY,
-        })
-        return openai(modelName || 'gpt-4o')
-      }
-
-      case 'openrouter': {
-        const openrouter = createOpenAI({
+        })(modelName || 'gpt-4o'),
+      openrouter: () =>
+        createOpenAI({
           apiKey: this.config.providers.openrouter.apiKey || process.env.OPENROUTER_API_KEY,
           baseURL: this.config.providers.openrouter.apiBase || 'https://openrouter.ai/api/v1',
-        })
-        return openrouter(modelName)
-      }
-
-      case 'google':
-      case 'gemini': {
-        const google = createGoogleGenerativeAI({
+        })(modelName),
+      google: () =>
+        createGoogleGenerativeAI({
           baseURL: this.config.providers.google.apiBase || process.env.GOOGLE_API_BASEURL,
           apiKey: this.config.providers.google.apiKey || process.env.GOOGLE_API_KEY,
-        })
-        return google(modelName || 'gemini-2.0-flash')
-      }
-
-      case 'bedrock': {
-        const bedrock = createAmazonBedrock({
+        })(modelName || 'gemini-2.0-flash'),
+      bedrock: () =>
+        createAmazonBedrock({
           region: this.config.providers.bedrock.region || process.env.AWS_REGION,
           accessKeyId: this.config.providers.bedrock.accessKeyId || process.env.AWS_ACCESS_KEY_ID,
           secretAccessKey:
             this.config.providers.bedrock.secretAccessKey || process.env.AWS_SECRET_ACCESS_KEY,
           sessionToken: this.config.providers.bedrock.sessionToken || process.env.AWS_SESSION_TOKEN,
-        })
-        return bedrock(modelName || 'anthropic.claude-3-5-sonnet-20241022-v2:0')
-      }
-
-      case 'groq': {
-        const groq = createOpenAI({
+        })(modelName || 'anthropic.claude-3-5-sonnet-20241022-v2:0'),
+      groq: () =>
+        createOpenAI({
           apiKey: this.config.providers.groq.apiKey || process.env.GROQ_API_KEY,
           baseURL: 'https://api.groq.com/openai/v1',
-        })
-        return groq(modelName || 'llama-3.3-70b-versatile')
-      }
-
-      default: {
-        // Default to Anthropic
-        const anthropic = createAnthropic({
-          apiKey: this.config.providers.anthropic.apiKey || process.env.ANTHROPIC_API_KEY,
-        })
-        return anthropic(modelId)
-      }
+        })(modelName || 'llama-3.3-70b-versatile'),
     }
+
+    const providerCreator = providerCreators[providerName.toLowerCase()]
+    if (providerCreator) {
+      return providerCreator()
+    }
+
+    // 默认回退到 Anthropic
+    return providerCreators.anthropic()
   }
 
   /**
