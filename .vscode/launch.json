@@ -2,16 +2,16 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "node",
+      "type": "bun",
       "request": "launch",
-      "name": "Debug Bun",
-      "runtimeExecutable": "bun",
-      "program": "${workspaceFolder}/src/index.ts",
-      "skipFiles": ["<node_internals>/**"],
-      "args": ["agent"],
+      "name": "Debug Bun Project",
+      "program": "${workspaceFolder}/src/index.ts", // 1. 务必指向确切入口
       "cwd": "${workspaceFolder}",
-      "env": {},
-      "stopOnEntry": false
+      "watchMode": false,
+      "stopOnEntry": true, // 2. 建议设为 true，确认调试器是否能成功停在第一行
+      "env": {
+        "BUN_DEBUG": "1"
+      }
     }
   ]
 }

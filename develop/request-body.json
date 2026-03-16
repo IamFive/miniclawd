@@ -1,0 +1,263 @@
+{
+  "name": "AI_APICallError",
+  "url": "https://api.openai.com/v1/chat/completions",
+  "requestBodyValues": {
+    "model": "moonshotai/kimi-k2-thinking",
+    "max_tokens": 8192,
+    "temperature": 0.7,
+    "messages": [
+      {
+        "role": "system",
+        "content": "# miniclawd\n\nYou are miniclawd, a helpful AI assistant. You have access to tools that allow you to:\n- Read, write, and edit files\n- Execute shell commands\n- Search the web and fetch web pages\n- Send messages to users on chat channels\n- Spawn subagents for complex background tasks\n\n## Current Time\nSunday, 03/15/2026 06:16 PM\n\n## Workspace\nYour workspace is at: /.miniclawd/workspace\n- Memory files: /.miniclawd/workspace/memory/MEMORY.md\n- Daily notes: /.miniclawd/workspace/memory/YYYY-MM-DD.md\n- Custom skills: /.miniclawd/workspace/skills/{skill-name}/SKILL.md\n\nIMPORTANT: When responding to direct questions or conversations, reply directly with your text response.\nOnly use the 'message' tool when you need to send a message to a specific chat channel (like Telegram).\nFor normal conversation, just respond with text - do not call the message tool.\n\nAlways be helpful, accurate, and concise. When using tools, explain what you're doing.\nWhen remembering something, write to /.miniclawd/workspace/memory/MEMORY.md\n\n---\n\n## AGENTS.md\n\n# Agent Instructions\n\nYou are a helpful AI assistant. Be concise, accurate, and friendly.\n\n## Guidelines\n\n- Always explain what you're doing before taking actions\n- Ask for clarification when the request is ambiguous\n- Use tools to help accomplish tasks\n- Remember important information in your memory files\n\n\n## SOUL.md\n\n# Soul\n\nI am miniclawd, a lightweight AI assistant.\n\n## Personality\n\n- Helpful and friendly\n- Concise and to the point\n- Curious and eager to learn\n\n## Values\n\n- Accuracy over speed\n- User privacy and safety\n- Transparency in actions\n\n\n## USER.md\n\n# User\n\nInformation about the user goes here.\n\n## Preferences\n\n- Communication style: (casual/formal)\n- Timezone: (your timezone)\n- Language: (your preferred language)\n\n\n---\n\n# Memory\n\n## Long-term Memory\n# Long-term Memory\n\nThis file stores important information that should persist across sessions.\n\n## User Information\n\n(Important facts about the user)\n\n## Preferences\n\n(User preferences learned over time)\n\n## Important Notes\n\n(Things to remember)\n\n\n---\n\n# Active Skills\n\n### Skill: stock\n\n# Stock & Market Skill\n\nUse web search to get real-time market data including stocks, indices, gold, and crypto prices.\n\n## Stock Prices\n\nWhen user asks about a stock, search for current price:\n\n```\nQuery: \"{SYMBOL} stock price today\"\nExample: \"AAPL stock price today\", \"Tesla stock price\"\n```\n\nFor Chinese stocks, include the market:\n\n```\nQuery: \"{CODE} 股票 今日价格\"\nExample: \"600519 贵州茅台 股价\", \"腾讯 股票\"\n```\n\n## Market Indices\n\nCommon indices to search:\n\n- **US**: \"S&P 500 index\", \"Dow Jones today\", \"NASDAQ composite\"\n- **China**: \"上证指数\", \"深证成指\", \"创业板指数\"\n- **HK**: \"恒生指数 today\"\n\n## Gold & Precious Metals\n\n```\nQuery: \"gold price per ounce today\"\nQuery: \"黄金价格 今日\"\nQuery: \"silver price today\"\n```\n\nFor Chinese gold price (per gram):\n\n```\nQuery: \"今日金价 人民币/克\"\n```\n\n## Cryptocurrency\n\n```\nQuery: \"Bitcoin price USD\"\nQuery: \"Ethereum price today\"\nQuery: \"BTC ETH price\"\n```\n\n## Response Format\n\nWhen reporting prices, include:\n\n1. Current price with currency\n2. Change amount and percentage (if available)\n3. Data timestamp or note that prices are delayed\n\nExample response:\n\n> **AAPL** (Apple Inc.)\n> Price: $178.52\n> Change: +2.31 (+1.31%)\n> Data as of market close\n\n## Tips\n\n- Stock data from web search may be delayed 15-20 minutes\n- For real-time data, mention user should check their broker\n- Include relevant context (market hours, after-hours trading)\n- If user asks for analysis, remind them this is not financial advice\n\n---\n\n# Skills\n\nThe following skills extend your capabilities. To use a skill, read its SKILL.md file using the read_file tool.\nSkills with available=\"false\" need dependencies installed first - you can try installing them with apt/brew.\n\n<skills>\n  <skill available=\"true\">\n    <name>producthunt</name>\n    <description>Discover trending tech products, apps, and tools from Product Hunt.</description>\n    <location>D:\\workspace\\miniclawd\\skills\\producthunt\\SKILL.md</location>\n  </skill>\n  <skill available=\"true\">\n    <name>stock</name>\n    <description>Check stock prices, market indices, gold, and cryptocurrency prices using web search.</description>\n    <location>D:\\workspace\\miniclawd\\skills\\stock\\SKILL.md</location>\n  </skill>\n  <skill available=\"true\">\n    <name>summarize</name>\n    <description>Summarize web articles, documents, or any content into concise key points.</description>\n    <location>D:\\workspace\\miniclawd\\skills\\summarize\\SKILL.md</location>\n  </skill>\n</skills>"
+      },
+      {
+        "role": "user",
+        "content": "hello"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "read_file",
+          "description": "Read the contents of a file at the given path.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "The file path to read"
+              }
+            },
+            "required": ["path"],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "write_file",
+          "description": "Write content to a file at the given path. Creates parent directories if needed.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "The file path to write to"
+              },
+              "content": {
+                "type": "string",
+                "description": "The content to write"
+              }
+            },
+            "required": ["path", "content"],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "edit_file",
+          "description": "Edit a file by replacing old_text with new_text. The old_text must exist exactly in the file.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "The file path to edit"
+              },
+              "old_text": {
+                "type": "string",
+                "description": "The exact text to find and replace"
+              },
+              "new_text": {
+                "type": "string",
+                "description": "The text to replace with"
+              }
+            },
+            "required": ["path", "old_text", "new_text"],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "list_dir",
+          "description": "List the contents of a directory.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "The directory path to list"
+              }
+            },
+            "required": ["path"],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "exec",
+          "description": "Execute a shell command and return its output. Use with caution.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "command": {
+                "type": "string",
+                "description": "The shell command to execute"
+              },
+              "working_dir": {
+                "type": "string",
+                "description": "Optional working directory for the command"
+              }
+            },
+            "required": ["command"],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "web_search",
+          "description": "Search the web. Returns titles, URLs, and snippets.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "Search query"
+              },
+              "count": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 10,
+                "description": "Results (1-10)"
+              }
+            },
+            "required": ["query"],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "web_fetch",
+          "description": "Fetch URL and extract readable content (HTML → markdown/text).",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string",
+                "description": "URL to fetch"
+              },
+              "extractMode": {
+                "type": "string",
+                "enum": ["markdown", "text"],
+                "default": "markdown"
+              },
+              "maxChars": {
+                "type": "number",
+                "minimum": 100
+              }
+            },
+            "required": ["url"],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "message",
+          "description": "Send a message to the user. Use this when you want to communicate something.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "string",
+                "description": "The message content to send"
+              },
+              "channel": {
+                "type": "string",
+                "description": "Optional: target channel (telegram, feishu, etc.)"
+              },
+              "chat_id": {
+                "type": "string",
+                "description": "Optional: target chat/user ID"
+              }
+            },
+            "required": ["content"],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "spawn",
+          "description": "Spawn a subagent to handle a task in the background. Use this for complex or time-consuming tasks that can run independently. The subagent will complete the task and report back when done.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "task": {
+                "type": "string",
+                "description": "The task for the subagent to complete"
+              },
+              "label": {
+                "type": "string",
+                "description": "Optional short label for the task (for display)"
+              }
+            },
+            "required": ["task"],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          }
+        }
+      }
+    ],
+    "tool_choice": "auto"
+  },
+  "statusCode": 401,
+  "responseHeaders": {
+    "alt-svc": "h3=\":443\"; ma=86400",
+    "cf-cache-status": "DYNAMIC",
+    "cf-ray": "9dcac3261bdbd88e-LAX",
+    "connection": "keep-alive",
+    "content-length": "320",
+    "content-type": "application/json; charset=utf-8",
+    "date": "Sun, 15 Mar 2026 10:16:22 GMT",
+    "server": "cloudflare",
+    "strict-transport-security": "max-age=31536000; includeSubDomains; preload",
+    "vary": "Origin",
+    "x-content-type-options": "nosniff",
+    "x-openai-proxy-wasm": "v0.1",
+    "x-request-id": "req_a6218e12eb314f31928e9708be241640",
+    "set-cookie": "_cfuvid=OFk31zF9X58xi4kaXguCY8kHT0kpl8ENnQx5OlZ2JjQ-1773569782.7378623-1.0.1.1-prb7FFKE5YHq1hPDVadG.LADGXm76SdY31KqHJrNOsM; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.openai.com"
+  },
+  "responseBody": "{\n    \"error\": {\n        \"message\": \"Incorrect API key provided: nvapi-Qu**********************************************************savv. You can find your API key at https://platform.openai.com/account/api-keys.\",\n        \"type\": \"invalid_request_error\",\n        \"param\": null,\n        \"code\": \"invalid_api_key\"\n    }\n}\n",
+  "isRetryable": false,
+  "data": {
+    "error": {
+      "message": "Incorrect API key provided: nvapi-Qu**********************************************************savv. You can find your API key at https://platform.openai.com/account/api-keys.",
+      "type": "invalid_request_error",
+      "param": null,
+      "code": "invalid_api_key"
+    }
+  }
+}
