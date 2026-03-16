@@ -2,6 +2,7 @@
  * Configuration schema using Zod.
  */
 
+import { homedir } from 'os'
 import { z } from 'zod'
 import type { Config } from '../../core/types/config.js'
 
@@ -89,7 +90,7 @@ export const ConfigSchema = z.object({
  */
 export function getWorkspacePath(config: Config): string {
   const workspace = config.agents.defaults.workspace
-  return workspace.replace(/^~/, process.env.HOME || '')
+  return workspace.replace(/^~/, homedir())
 }
 
 /**
